@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class })
 @EnableAutoConfiguration
-@EntityScan(basePackages = {"com.example.demo.model"})
 public class DemoApplication {
 
 	public static void main(String[] args) {
