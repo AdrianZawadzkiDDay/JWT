@@ -11,6 +11,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static com.example.demo.user.Role.ADMIN;
+import static com.example.demo.user.Role.USER;
+import static org.springframework.http.HttpMethod.GET;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -26,6 +30,11 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests()
                 .requestMatchers("/api/v1/auth/**")
                 .permitAll()
+
+                .requestMatchers("/api/v1/demo-controller/user").hasRole(USER.name())
+                .requestMatchers("/api/v1/demo-controller/admin").hasRole(ADMIN.name())
+                .requestMatchers(GET, "/api/v1/demo-controller/common").hasAnyRole(ADMIN.name(), USER.name())
+
                 .anyRequest()
                 .authenticated()
                 .and()
