@@ -1,5 +1,6 @@
 package com.example.demo.auth;
 
+import com.example.demo.auth.exception.UserAlreadyExistException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,8 +12,13 @@ public class AuthenticationController {
     private final AuthenticationService service;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(service.register(request));
+    public ResponseEntity register(@RequestBody RegisterRequest request) {
+        try {
+            return ResponseEntity.ok(service.register(request));
+        } catch(UserAlreadyExistException e) {
+            return ResponseEntity.status(409).build();
+
+        }
     }
 
     @PostMapping("/authenticate")

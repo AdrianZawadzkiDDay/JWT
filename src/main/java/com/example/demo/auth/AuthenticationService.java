@@ -1,5 +1,6 @@
 package com.example.demo.auth;
 
+import com.example.demo.auth.exception.UserAlreadyExistException;
 import com.example.demo.config.JwtService;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.token.Token;
@@ -13,6 +14,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -22,7 +25,11 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationResponse register(RegisterRequest request) {
+    public AuthenticationResponse register(RegisterRequest request) throws UserAlreadyExistException {
+        Optional<User> optionalUser = repository.findByEmail(request.getEmail());
+        if(optionalUser.isPresent()) {
+            throw new UserAlreadyExistException();
+        }
         var user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
@@ -30,6 +37,7 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
                 .build();
+
         var savedUser = repository.save(user);
         var jwtToken = jwtService.generateToken(user);
         saveUserToken(user, jwtToken);
@@ -76,6 +84,7 @@ public class AuthenticationService {
                 .id(user.getId())
                 .username(user.getFirstname())
                 .token(jwtToken)
+                .role(user.getRole().name())
                 .build();
     }
 }
