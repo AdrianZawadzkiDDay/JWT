@@ -1,5 +1,6 @@
 package com.example.demo.auth;
 
+import com.example.demo.activation.service.ActivationTokenService;
 import com.example.demo.auth.exception.UserAlreadyExistException;
 import com.example.demo.config.JwtService;
 import com.example.demo.repository.UserRepository;
@@ -25,6 +26,8 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
+    private final ActivationTokenService activationTokenService;
+
     public AuthenticationResponse register(RegisterRequest request) throws UserAlreadyExistException {
         Optional<User> optionalUser = repository.findByEmail(request.getEmail());
         if(optionalUser.isPresent()) {
@@ -36,9 +39,11 @@ public class AuthenticationService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
+                .isEnabled(false)
                 .build();
 
         var savedUser = repository.save(user);
+        activationTokenService.saveActivationToken(request.getEmail());
         var jwtToken = jwtService.generateToken(user);
         saveUserToken(user, jwtToken);
         return AuthenticationResponse.builder()
@@ -77,6 +82,7 @@ public class AuthenticationService {
         );
         var user = repository.findByEmail(request.getEmail())
                 .orElseThrow();
+
         var jwtToken = jwtService.generateToken(user);
         revokeAllUserTokens(user);
         saveUserToken(user, jwtToken);

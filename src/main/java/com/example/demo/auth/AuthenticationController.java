@@ -3,6 +3,7 @@ package com.example.demo.auth;
 import com.example.demo.auth.exception.UserAlreadyExistException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,6 +24,10 @@ public class AuthenticationController {
 
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
-        return ResponseEntity.ok(service.authenticate(request));
+        try {
+            return ResponseEntity.ok(service.authenticate(request));
+        } catch(DisabledException e) {
+            return ResponseEntity.status(409).build();
+        }
     }
 }
