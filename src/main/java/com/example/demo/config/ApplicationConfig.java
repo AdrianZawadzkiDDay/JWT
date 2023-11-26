@@ -1,4 +1,5 @@
 package com.example.demo.config;
+import com.example.demo.activation.ClockFactory;
 import com.example.demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +16,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -58,6 +60,11 @@ public class ApplicationConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public ClockFactory clockFactory() {
+        return () -> Clock.systemDefaultZone();
     }
 
 }

@@ -24,8 +24,8 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(mail, true);
 
             helper.setTo(to);
-            helper.setReplyTo("01code.adrian@gmail.com");
-            helper.setFrom("01code.adrian@gmail.com");
+            helper.setReplyTo("test@gmail.com");
+            helper.setFrom("test@gmail.com");
             helper.setSubject(title);
             helper.setText(content, true);
 

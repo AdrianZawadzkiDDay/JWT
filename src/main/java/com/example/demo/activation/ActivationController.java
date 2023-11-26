@@ -1,5 +1,6 @@
 package com.example.demo.activation;
 
+import com.example.demo.activation.exception.ActivationTokenExpiredException;
 import com.example.demo.activation.service.ActivationTokenService;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.TemplateEngine;
@@ -24,7 +25,6 @@ public class ActivationController {
 
     @PostMapping("/activate")
     public void activateAccount2() {
-        System.out.println("Wywolalo sie z linka");
         Context context = new Context();
         context.setVariable("activationLink", "http://localhost:4200/activateInfo");
 
@@ -34,10 +34,11 @@ public class ActivationController {
 
     @PostMapping("/activate/{token}")
     public ResponseEntity activateAccount(@PathVariable("token") String token) {
-        System.out.println("Tutaj jest token: " + token);
         try {
             activationTokenService.activateAccount(token);
             return ResponseEntity.ok().build();
+        } catch (ActivationTokenExpiredException e) {
+            return ResponseEntity.status(401).build();
         } catch (Exception e) {
             return ResponseEntity.status(409).build();
         }

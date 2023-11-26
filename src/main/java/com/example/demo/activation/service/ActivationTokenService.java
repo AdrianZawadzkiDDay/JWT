@@ -1,6 +1,8 @@
 package com.example.demo.activation.service;
 
+import com.example.demo.activation.ClockFactory;
 import com.example.demo.activation.entity.ActivationToken;
+import com.example.demo.activation.exception.ActivationTokenExpiredException;
 import com.example.demo.activation.repository.ActivationTokenRepository;
 import com.example.demo.mail.EmailService;
 import com.example.demo.repository.UserRepository;
@@ -13,7 +15,9 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,6 +31,8 @@ public class ActivationTokenService {
     private final UserRepository userRepository;
     private final TemplateEngine templateEngine;
     private final EmailService emailService;
+
+    private final ClockFactory clockFactory;
 
 
     public void saveActivationToken(String email) {
@@ -53,7 +59,7 @@ public class ActivationTokenService {
         String body = templateEngine.process("email/activation", context);
 
         log.info("before send mail");
-        emailService.send("mail@tlen.pl", "Potwierdzenie rejestracji", body);
+        emailService.send("test@tlen.pl", "Potwierdzenie rejestracji", body);
     }
 
     @Transactional
@@ -61,6 +67,16 @@ public class ActivationTokenService {
         Optional<ActivationToken> optionalActivationToken = activationTokenRepository.findByToken(token);
         if(optionalActivationToken.isPresent()) {
             ActivationToken activationToken = optionalActivationToken.get();
+
+            Timestamp expiredTimestamp = activationToken.getExpiredAt();
+            Instant currentInstant = Instant.now(clockFactory.get());
+            Timestamp currentTimestamp = Timestamp.from(currentInstant);
+            int comparisonResult = currentTimestamp.compareTo(expiredTimestamp);
+
+            if(comparisonResult > 0) {
+                throw new ActivationTokenExpiredException();
+            }
+
             String userName = activationToken.getUserName();
 
             Optional<User> userOptional = userRepository.findByEmail(userName);
